@@ -1,61 +1,57 @@
- 
-    
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>UML Diagram Generator</title>
-        <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-        <style>
-            .fade-in {
-                animation: fadeIn 1s ease-in-out;
-            }
-            @keyframes fadeIn {
-                0% { opacity: 0; }
-                100% { opacity: 1; }
-            }
-        </style>
-    </head>
-    <body class="bg-gray-100 min-h-screen p-8">
-        <div class="max-w-6xl mx-auto grid grid-cols-6  space-x-8">
-            <!-- Input Form Section -->
-            <div class="bg-white rounded-lg col-span-2 shadow-md p-6">
-                <h1 class="text-3xl font-bold text-gray-800 mb-8">UML Diagram Generator</h1>
-                <form id="diagramForm" class="space-y-6">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UML Diagram Generator</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/codemirror@5.65.2/lib/codemirror.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.2/lib/codemirror.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.2/mode/plantuml/plantuml.js"></script>
+</head>
+<body class="bg-gray-100 min-h-screen p-8">
+    <div class="max-w-7xl mx-auto">
+        <!-- Input Form -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h1 class="text-3xl font-bold text-gray-800 mb-8">UML Diagram Generator</h1>
+            <form id="diagramForm" class="space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label for="project_name" class="block text-sm font-medium text-gray-700">Project Name</label>
+                        <label class="block text-sm font-medium text-gray-700">Project Name</label>
                         <input type="text" id="project_name" name="project_name" required
-                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
                     </div>
                     
                     <div>
-                        <label for="diagram_type" class="block text-sm font-medium text-gray-700">Diagram Type</label>
-                        <select id="diagram_type" name="diagram_type" required
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                            {% for type in diagram_types %}
-                            <option value="{{ type }}">{{ type }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-    
-                    <div>
-                        <label for="theme" class="block text-sm font-medium text-gray-700">Theme</label>
-                        <select id="theme" name="theme"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                            <option value="">Default Theme</option>
+                        <label class="block text-sm font-medium text-gray-700">Theme</label>
+                        <select id="theme" name="theme" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                            <option value="none">Default Theme</option>
                             {% for theme in themes %}
                             <option value="{{ theme }}">{{ theme }}</option>
                             {% endfor %}
                         </select>
                     </div>
-                    
-                    <button type="submit" 
-                            class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
-                        Generate Diagram
-                    </button>
-                </form>
-            </div>
+                </div>
+
+                <div class="space-y-4">
+                    <label class="block text-sm font-medium text-gray-700">Select Diagrams</label>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        {% for type in diagram_types %}
+                        <label class="inline-flex items-center">
+                            <input type="checkbox" name="diagram_types" value="{{ type }}"
+                                   class="rounded border-gray-300 text-indigo-600 shadow-sm">
+                            <span class="ml-2">{{ type }}</span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700">
+                    Generate Diagrams
+                </button>
+            </form>
+        </div>
+
             
             <!-- Results Section -->
             <div id="results" class=" col-span-4 place-content-center     space-y-6">

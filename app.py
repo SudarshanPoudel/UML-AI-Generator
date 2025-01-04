@@ -1,4 +1,5 @@
 import re
+import requests
 from flask import Flask, render_template, request, jsonify
 import g4f
 import os
@@ -6,6 +7,7 @@ import logging
 from functools import wraps
 import plantuml
 import base64
+import json
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.urandom(24)
@@ -20,6 +22,61 @@ logger = logging.getLogger(__name__)
 
 # Initialize PlantUML with the correct image URL
 plantuml_instance = plantuml.PlantUML(url='http://www.plantuml.com/plantuml/img/')
+def get_plantuml_themes():
+    """Return the fixed list of available PlantUML themes."""
+    return [
+        "amiga",
+        "aws-orange",
+        "black-knight",
+        "bluegray",
+        "blueprint",
+        "carbon-gray",
+        "cerulean-outline",
+        "cerulean",
+        "cloudscape-design",
+        "crt-amber",
+        "crt-green",
+        "cyborg-outline",
+        "cyborg",
+        "hacker",
+        "lightgray",
+        "mars",
+        "materia-outline",
+        "materia",
+        "metal",
+        "mimeograph",
+        "minty",
+        "mono",
+        "none",
+        "plain",
+        "reddress-darkblue",
+        "reddress-darkgreen",
+        "reddress-darkorange",
+        "reddress-darkred",
+        "reddress-lightblue",
+        "reddress-lightgreen",
+        "reddress-lightorange",
+        "reddress-lightred",
+        "sandstone",
+        "silver",
+        "sketchy-outline",
+        "sketchy",
+        "spacelab-white",
+        "spacelab",
+        "sunlust",
+        "superhero-outline",
+        "superhero",
+        "toy",
+        "united",
+        "vibrant"
+    ]
+
+@app.route('/themes')
+def get_themes():
+    """Endpoint to fetch available PlantUML themes."""
+    themes = get_plantuml_themes()
+    return jsonify({'themes': themes})
+
 
 def handle_errors(f):
     @wraps(f)
@@ -40,41 +97,35 @@ def handle_errors(f):
             return jsonify({'error': str(e)}), 500
     return decorated_function
 
-def generate_ai_prompt(project_name, diagram_type):
-    """Generate a prompt for the AI based on project name and diagram type."""
+def generate_ai_prompt(project_name, diagram_type, theme=None):
+    """Generate a prompt for the AI based on project name, diagram type, and theme."""
+    theme_directive = f"!theme {theme}\n" if theme else ""
     return f"""Create a PlantUML syntax for a {diagram_type} diagram for a project named {project_name}. 
     The diagram should be detailed and follow UML standards. 
     Provide only the PlantUML syntax without any additional text or explanations.
-    Start with @startuml and end with @enduml."""
+    Start with @startuml
+    {theme_directive}"""
 
 def extract_plantuml_syntax(text):
     """Extract and clean PlantUML syntax between @startuml and @enduml tags."""
-    # Find the content between @startuml and @enduml
     pattern = r'@startuml\s*(.*?)\s*@enduml'
     match = re.search(pattern, text, re.DOTALL)
     
     if not match:
         raise Exception("No valid PlantUML syntax found in AI response")
     
-    # Get the content and clean it
     content = match.group(1)
-    
-    # Clean the content:
-    # 1. Split into lines
     lines = content.split('\n')
-    # 2. Remove empty lines at start and end
     lines = [line.rstrip() for line in lines]
-    # 3. Remove leading/trailing empty lines while preserving internal empty lines
+    
     while lines and not lines[0].strip():
         lines.pop(0)
     while lines and not lines[-1].strip():
         lines.pop()
     
-    # Reconstruct the cleaned PlantUML syntax
     cleaned_content = '\n'.join(lines)
-    
-    # Return the complete syntax with @startuml and @enduml
     return cleaned_content
+
 def get_ai_response(prompt):
     """Get response from g4f AI API."""
     try:
@@ -90,14 +141,13 @@ def get_ai_response(prompt):
 def generate_diagram(plantuml_syntax):
     """Generate diagram image from PlantUML syntax."""
     try:
-        # Get the raw PNG image data
         png_data = plantuml_instance.processes(plantuml_syntax)
-        
-        # Convert to base64 for displaying in browser
         return base64.b64encode(png_data).decode()
     except Exception as e:
         logger.error(f"PlantUML Processing Error: {str(e)}")
         raise
+
+
 
 @app.route('/try')
 def try_app():
@@ -113,13 +163,12 @@ def try_app():
         "State Diagram",
         "Timing Diagram"
     ]
-    return render_template('generate.html', diagram_types=diagram_types)
-
+    themes = get_plantuml_themes()
+    return render_template('generate.html', diagram_types=diagram_types, themes=themes)
 
 @app.route('/')
 def index():
     """Render the main page."""
-
     return render_template('index.html')
 
 @app.route('/generate', methods=['POST'])
@@ -128,17 +177,18 @@ def generate():
     """Handle diagram generation request."""
     project_name = request.form.get('project_name')
     diagram_type = request.form.get('diagram_type')
+    theme = request.form.get('theme')
 
     if not project_name or not diagram_type:
         return jsonify({'error': 'Missing required fields'}), 400
 
-    # Generate AI prompt and get response
-    prompt = generate_ai_prompt(project_name, diagram_type)
-    print("prompt", prompt)
-    plantuml_syntax =  get_ai_response(prompt)
-    print("plantuml_syntax", plantuml_syntax)
+    prompt = generate_ai_prompt(project_name, diagram_type, theme)
+    plantuml_syntax = get_ai_response(prompt)
+    
+    # If theme is selected, add theme directive at the beginning
+    if theme:
+        plantuml_syntax = f"!theme {theme}\n{plantuml_syntax}"
 
-    # Generate diagram
     diagram_base64 = generate_diagram(plantuml_syntax)
 
     return jsonify({
@@ -148,3 +198,9 @@ def generate():
 
 if __name__ == '__main__':
     app.run(debug=True)
+    
+    
+    
+    
+    
+    
