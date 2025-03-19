@@ -86,3 +86,7 @@ def main():
             st.code(f"@startuml\n{plantuml_syntax}\n@enduml", language="text")
         except Exception as e:
             st.error(str(e))
+
+
+if __name__=="main":
+    main()
