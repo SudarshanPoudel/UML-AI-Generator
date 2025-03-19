@@ -132,10 +132,11 @@ if st.button("Generate Diagram", type="primary"):
             
             st.subheader(f"Generated {diagram_type}")
             st.image(f"data:image/png;base64,{diagram_base64}", use_container_width=True)
+            image_data = base64.b64decode(diagram_base64.split(",")[1])
             st.download_button(
                 label="Download Diagram",
-                data=diagram_base64,
-                file_name="uml_diagram.png",
+                data=image_data,
+                file_name=f"umlsenpai-{project_name}-{diagram_type}.png",
                 mime="image/png",   
                 type="primary"
             )
