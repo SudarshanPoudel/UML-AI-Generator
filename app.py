@@ -80,9 +80,7 @@ if st.button("Generate Diagram"):
             
             st.subheader("Generated UML Diagram")
             st.image(f"data:image/png;base64,{diagram_base64}", use_container_width=True)
-            
-            st.subheader("PlantUML Syntax")
-            st.code(f"@startuml\n{plantuml_syntax}\n@enduml", language="text")
+
         except Exception as e:
             st.error(str(e))
 
