@@ -57,36 +57,32 @@ def generate_diagram(plantuml_syntax):
         logger.error("Try again")
         raise
 
-def main():
-    st.title("UML-SENPAI")
-    st.write("Generate UML diagrams using AI and PlantUML")
+st.title("UML-SENPAI")
+st.write("Generate UML diagrams using AI and PlantUML")
+
+project_name = st.text_input("Project Name")
+diagram_types = [
+    "Sequence Diagram", "Use Case Diagram", "Class Diagram", "Object Diagram", "Activity Diagram",
+    "Component Diagram", "Deployment Diagram", "State Diagram", "Timing Diagram"
+]
+diagram_type = st.selectbox("Select Diagram Type", diagram_types)
+description = st.text_area("Additional Description (Optional)")
+if st.button("Generate Diagram"):
+    if not project_name or not diagram_type:
+        st.error("Project Name and Diagram Type are required")
+        return
     
-    project_name = st.text_input("Project Name")
-    diagram_types = [
-        "Sequence Diagram", "Use Case Diagram", "Class Diagram", "Object Diagram", "Activity Diagram",
-        "Component Diagram", "Deployment Diagram", "State Diagram", "Timing Diagram"
-    ]
-    diagram_type = st.selectbox("Select Diagram Type", diagram_types)
-    description = st.text_area("Additional Description (Optional)")
-    if st.button("Generate Diagram"):
-        if not project_name or not diagram_type:
-            st.error("Project Name and Diagram Type are required")
-            return
+    prompt = generate_ai_prompt(project_name, diagram_type, description)
+    
+    try:
+        plantuml_syntax = get_ai_response(prompt)
+        diagram_base64 = generate_diagram(plantuml_syntax)
         
-        prompt = generate_ai_prompt(project_name, diagram_type, description)
+        st.subheader("Generated UML Diagram")
+        st.image(f"data:image/png;base64,{diagram_base64}", use_container_width=True)
         
-        try:
-            plantuml_syntax = get_ai_response(prompt)
-            diagram_base64 = generate_diagram(plantuml_syntax)
-            
-            st.subheader("Generated UML Diagram")
-            st.image(f"data:image/png;base64,{diagram_base64}", use_container_width=True)
-            
-            st.subheader("PlantUML Syntax")
-            st.code(f"@startuml\n{plantuml_syntax}\n@enduml", language="text")
-        except Exception as e:
-            st.error(str(e))
+        st.subheader("PlantUML Syntax")
+        st.code(f"@startuml\n{plantuml_syntax}\n@enduml", language="text")
+    except Exception as e:
+        st.error(str(e))
 
-
-if __name__=="main":
-    main()
