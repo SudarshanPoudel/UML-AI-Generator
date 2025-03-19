@@ -70,19 +70,19 @@ description = st.text_area("Additional Description (Optional)")
 if st.button("Generate Diagram"):
     if not project_name or not diagram_type:
         st.error("Project Name and Diagram Type are required")
-        return
-    
-    prompt = generate_ai_prompt(project_name, diagram_type, description)
-    
-    try:
-        plantuml_syntax = get_ai_response(prompt)
-        diagram_base64 = generate_diagram(plantuml_syntax)
         
-        st.subheader("Generated UML Diagram")
-        st.image(f"data:image/png;base64,{diagram_base64}", use_container_width=True)
+    else:
+        prompt = generate_ai_prompt(project_name, diagram_type, description)
         
-        st.subheader("PlantUML Syntax")
-        st.code(f"@startuml\n{plantuml_syntax}\n@enduml", language="text")
-    except Exception as e:
-        st.error(str(e))
+        try:
+            plantuml_syntax = get_ai_response(prompt)
+            diagram_base64 = generate_diagram(plantuml_syntax)
+            
+            st.subheader("Generated UML Diagram")
+            st.image(f"data:image/png;base64,{diagram_base64}", use_container_width=True)
+            
+            st.subheader("PlantUML Syntax")
+            st.code(f"@startuml\n{plantuml_syntax}\n@enduml", language="text")
+        except Exception as e:
+            st.error(str(e))
 
