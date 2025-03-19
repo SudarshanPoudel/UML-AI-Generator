@@ -4,3 +4,4 @@ plantuml
 python-dotenv
 requests
 Werkzeug
+streamlit
